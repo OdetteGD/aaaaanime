@@ -31,13 +31,12 @@ function patchAxios(instance) {
 // Patch main axios
 patchAxios(axios);
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+const app = express();
+const PORT = Number(process.env.PORT || 3000);
 
-  // Custom Scraper API
-  // Scraper for Recent Episodes (Home Page)
-  app.get("/api/anime/recent", async (req, res) => {
+// Custom Scraper API
+// Scraper for Recent Episodes (Home Page)
+app.get("/api/anime/recent", async (req, res) => {
     try {
       const page = req.query.page || 1;
       const type = req.query.type || 1; // 1: Recent, 2: Popular
@@ -213,6 +212,7 @@ async function startServer() {
     res.json({ status: "ok", base: process.env.BASE_URL });
   });
 
+async function startServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -228,9 +228,15 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  }
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
